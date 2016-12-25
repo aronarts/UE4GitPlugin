@@ -25,7 +25,7 @@ Beta version 1.0:
 - revert modifications of a file
 - add, delete, rename a file
 - checkin/commit a file (cannot handle atomically more than 20 files)
-- migrate an asset between to projects if both are using Git
+- migrate an asset between two projects if both are using Git
 - solve a merge conflict on a blueprint
 - show current branch name in status text
 - Sync to Pull the current branch if there is no local modified files
