@@ -29,7 +29,7 @@ Beta version 1.0:
 - solve a merge conflict on a blueprint
 - show current branch name in status text
 - Sync to Pull the current branch if there is no local modified files
-- git LFS (Github & Gitlab), git-annexe and/or git-media are working under Windows
+- git LFS (Github & Gitlab) is only partially working under Windows (using Git For Windows): diffs are broken (issue #35)!
 - Windows, Mac and Linux
 
 #### What *cannot* be done presently (TODO list for v1.0, ordered by priority):
