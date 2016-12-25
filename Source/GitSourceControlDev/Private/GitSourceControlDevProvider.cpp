@@ -293,6 +293,19 @@ TArray< TSharedRef<ISourceControlLabel> > FGitSourceControlDevProvider::GetLabel
 {
 	TArray< TSharedRef<ISourceControlLabel> > Tags;
 
+	// TODO SRombauts : tags
+	if (bGitRepositoryFound)
+	{
+		FGitSourceControlDevModule& GitSourceControlDev = FModuleManager::LoadModuleChecked<FGitSourceControlDevModule>("GitSourceControlDev");
+		const FString& PathToGitBinary = GitSourceControlDev.AccessSettings().GetBinaryPath();
+		TArray<FString> InfoMessages;
+		TArray<FString> ErrorMessages;
+		TArray<FString> Parameters;
+		Parameters.Add(TEXT("--list"));
+		Parameters.Add(InMatchingSpec);
+		GitSourceControlDevUtils::RunCommand(TEXT("tag"), PathToGitBinary, PathToRepositoryRoot, Parameters, TArray<FString>(), InfoMessages, ErrorMessages);
+	}
+
 	return Tags;
 }
 

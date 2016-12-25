@@ -93,16 +93,17 @@ static bool RunCommandInternalRaw(const FString& InCommand, const FString& InPat
 
 	FullCommand += LogableCommand;
 
+	// @todo: temporary debug logs
 	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternalRaw: 'git %s'"), *LogableCommand);
-// @todo: temporary debug logs
-// UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternalRaw: 'git %s'"), *FullCommand);
+	// @todo: temporary debug logs
+	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternalRaw: 'git %s'"), *FullCommand);
 	FPlatformProcess::ExecProcess(*InPathToGitBinary, *FullCommand, &ReturnCode, &OutResults, &OutErrors);
 	UE_LOG(LogSourceControl, Log, TEXT("RunCommandInternalRaw: ExecProcess ReturnCode=%d OutResults='%s'"), ReturnCode, *OutResults);
-	if (!OutErrors.IsEmpty())
+	if (ReturnCode != 0)
 	{
+		// @todo: temporary debug logs
 		UE_LOG(LogSourceControl, Error, TEXT("RunCommandInternalRaw: ExecProcess ReturnCode=%d OutErrors='%s'"), ReturnCode, *OutErrors);
 	}
-
 	return ReturnCode == 0;
 }
 
@@ -573,7 +574,7 @@ static void ParseStatusResults(const FString& InPathToGitBinary, const FString& 
 			}
 		}
 		FileState.TimeStamp.Now();
-		OutStates.Add(FileState);
+		OutStates.Add(MoveTemp(FileState));
 	}
 }
 
@@ -637,8 +638,7 @@ bool RunDumpToFile(const FString& InPathToGitBinary, const FString& InRepository
 		FullCommand += InRepositoryRoot;
 		// and the ".git" subdirectory in it (before the command itself)
 		FullCommand += TEXT("\" --git-dir=\"");
-		FullCommand += InRepositoryRoot;
-		FullCommand += TEXT(".git\" ");
+		FullCommand += FPaths::Combine(*InRepositoryRoot, TEXT(".git\" "));
 	}
 	// then the git command itself
 	FullCommand += TEXT("show ");
@@ -907,10 +907,14 @@ bool UpdateCachedStates(const TArray<FGitSourceControlDevState>& InStates)
 	for(const auto& InState : InStates)
 	{
 		TSharedRef<FGitSourceControlDevState, ESPMode::ThreadSafe> State = Provider.GetStateInternal(InState.LocalFilename);
-		auto History = MoveTemp(State->History);
-		*State = InState;
-		State->TimeStamp = FDateTime::Now();
-		State->History = MoveTemp(History);
+		if(State->WorkingCopyState != InState.WorkingCopyState)
+		{
+			//TODO SRombauts: to test
+			auto History = MoveTemp(State->History);
+			*State = InState;
+			State->TimeStamp = FDateTime::Now();
+			State->History = MoveTemp(History);
+		}
 	}
 
 	return (NbStatesUpdated > 0);
